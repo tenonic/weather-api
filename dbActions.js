@@ -5,7 +5,7 @@ var pg = require('pg');
 
 module.exports = {
     checkAndUpdate: function (req, res) {
-        console.log('from dbActions');
+        console.log('from checkAndUpdate');
         pg.connect(conString, (err, client, done) => {
             if (err) {
                 done();
@@ -29,13 +29,25 @@ module.exports = {
                                 var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
 
                                 client.query("UPDATE city_weather SET expiry_date=($1)", [new_exp_date], function (q_er2, q_result2) {
-                                    res.send(q_result2);
+                                    if (err) {
+                                        res.send('error on update');
+                                    }
+                                    client.query("SELECT * FROM city_weather WHERE city_code = $1 AND province_code = $2 AND city_name = $3",
+                                        [req.params.cityCode, req.params.provinceCode, req.params.cityName], function (q_err3, q_result3) {
+                                            done();
+                                            if (q_err3)
+                                            { console.error(q_err3); res.send("Error " + q_err3); }
+                                            else {
+                                                //console.log(result.rows) 
+                                                res.send({ results: q_result3.rows });
+                                            }
+                                        });
                                 });
 
                             } else {
                                 console.log('not time to update yet');
                                 //rows[0] ?
-                                res.send(q_result.rows);
+                                res.send({results: q_result.rows});
                             }
 
                         } else {
