@@ -87,20 +87,10 @@ router.get('/dbinsert/:provinceCode/:cityCode/:cityName', (req, res) => {
 
 
 router.get('/Barrie', (req, res) => {
+    console.log('barrie cond');
+    dbActions.getBarrie(req, res);
 
-    console.log('barrie get');
-
-    pg.connect(conString, function (err, client, done) {
-        client.query('SELECT * FROM city_weather', function (err, result) {
-            done();
-            if (err)
-            { console.error(err); res.send("Error " + err); }
-            else {
-                //console.log(result.rows) 
-                res.send({ results: result.rows });
-            }
-        });
-    });
+   
     //res.send({ test: 'works' });
 });
 

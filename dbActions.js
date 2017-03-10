@@ -68,6 +68,22 @@ module.exports = {
                     });
             }
         });
+    },
+
+    getBarrie: function (req, res) {
+        console.log('barrie get');
+
+        pg.connect(conString, function (err, client, done) {
+            client.query('SELECT * FROM city_weather', function (err, result) {
+                done();
+                if (err)
+                { console.error(err); res.send("Error " + err); }
+                else {
+                    //console.log(result.rows) 
+                    res.send({ results: result.rows });
+                }
+            });
+        });
     }
 
 }
