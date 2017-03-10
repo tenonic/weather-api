@@ -2,6 +2,8 @@ var conString = process.env.DATABASE_URL
     || "postgres://nkbzizwzkuiokp:472a016ade0325eebbb97037b2f7ca4ec4285eb65e04bd919f8350c18adb36b2@ec2-54-243-187-133.compute-1.amazonaws.com:5432/dhcjqujfnq6mr?ssl=true";
 
 var pg = require('pg');
+var request = require("request");
+var parseString = require('xml2js').parseString;
 
 module.exports = {
     checkAndUpdate: function (req, res) {
@@ -47,7 +49,7 @@ module.exports = {
                             } else {
                                 console.log('not time to update yet');
                                 //rows[0] ?
-                                res.send({results: q_result.rows});
+                                res.send({ results: q_result.rows });
                             }
 
                         } else {
@@ -70,9 +72,24 @@ module.exports = {
                                         expiryDate.setMinutes(curDate.getMinutes() + 5);
                                         client.query('INSERT INTO city_weather(city_name, city_code, province_code, conditions, created_date, modified_date, expiry_date)'
                                             + 'values($1, $2, $3, $4, $5, $6, $7)',
-                                            [req.params.cityName, req.params.cityCode, req.params.provinceCode, json.siteData, curDate, curDate, expiryDate]);
-                                        res.status(200);
-                                        res.send(json.siteData);
+                                            [req.params.cityName, req.params.cityCode, req.params.provinceCode, json.siteData, curDate, curDate, expiryDate], function (q_err4, q_result4) {
+                                                if (q_err4) {
+                                                    res.send('error on INSERT');
+                                                }
+                                                client.query("SELECT * FROM city_weather WHERE city_code = $1 AND province_code = $2 AND city_name = $3",
+                                                    [req.params.cityCode, req.params.provinceCode, req.params.cityName], function (q_err5, q_result5) {
+                                                        done();
+                                                        if (q_err5)
+                                                        { console.error(q_err5); res.send("Error " + q_err5); }
+                                                        else {
+                                                            //console.log(result.rows) 
+                                                            res.send({ results: q_result5.rows });
+                                                        }
+                                                    });
+
+                                            });
+                                        // res.status(200);
+                                        // res.send(json.siteData);
                                     });
                                 }
                             });
