@@ -7,7 +7,7 @@ var parseString = require('xml2js').parseString;
 module.exports = {
     getWeatherData: function getWeatherData(req, res, next) {
         db.selectCityData(req, res)
-            .then(function (data) {
+            .then(data => {
                 if (data.rowCount > 0) {
                     console.log('record found!');
                     //console.log('SELECT data:', data);
@@ -21,14 +21,31 @@ module.exports = {
                         rq.getWeatherXml(req, res).then(xml => {
                             parseString(xml, function (err, json) {
                                 db.updateCityData(req, res, new_exp_date, curDate, json)
-                                    .then(db.selectCityData(req, res).then(
-                                        (data) => res.send({results: data.rows[0]})
-                                    ));
+                                    .then(() => {
+                                        db.selectCityData(req, res).then(
+                                            (data) => res.send({ results: data.rows[0] })
+                                        )
+                                    });
                             })
                         })
                     } else {
-                        res.send({results: data.rows[0]})
+                        res.send({ results: data.rows[0] })
                     }
+                } else {
+                    rq.getWeatherXml(req, res).then(xml => {
+                        parseString(xml, function (err, json) {
+                            var curDate = new Date();
+                            var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
+                            db.insertCityData(req, res, new_exp_date, curDate, json).then(() => {
+                                //console.log('inserted');
+                                db.selectCityData(req, res).then(
+                                    data => res.send({ results: data.rows[0] })
+                                )
+                            }
+
+                            );
+                        })
+                    });
                 }
             });
 
