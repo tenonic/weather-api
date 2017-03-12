@@ -7,7 +7,6 @@ var parseString = require('xml2js').parseString;
 
 module.exports = {
     checkAndUpdate: function (req, res) {
-        console.log('from checkAndUpdate');
         pg.connect(conString, (err, client, done) => {
             if (err) {
                 done();
@@ -30,20 +29,38 @@ module.exports = {
                                 var curDate = new Date();
                                 var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
 
-                                client.query("UPDATE city_weather SET expiry_date=($1)", [new_exp_date], function (q_er2, q_result2) {
-                                    if (err) {
-                                        res.send('error on update');
-                                    }
-                                    client.query("SELECT * FROM city_weather WHERE city_code = $1 AND province_code = $2 AND city_name = $3",
-                                        [req.params.cityCode, req.params.provinceCode, req.params.cityName], function (q_err3, q_result3) {
-                                            done();
-                                            if (q_err3)
-                                            { console.error(q_err3); res.send("Error " + q_err3); }
-                                            else {
-                                                //console.log(result.rows) 
-                                                res.send({ results: q_result3.rows });
-                                            }
+                                request("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/" + req.params.provinceCode + "/" + req.params.cityCode + "_e.xml", function (error, response, body) {
+
+                                    var xml = body;
+
+                                    if (error) {
+                                        console.log('error on the request');
+
+                                    } else {
+                                        parseString(xml, function (err, json) {
+                                            client.query("UPDATE city_weather SET expiry_date=($1), modified_date=($2), conditions=($3)" +
+                                                "WHERE city_code = $4 AND province_code = $5 AND city_name = $6",
+                                                [new_exp_date, curDate, json.siteData, req.params.cityCode, req.params.provinceCode, req.params.cityName],
+                                                function (q_er2, q_result2) {
+                                                    if (q_er2) {
+                                                        res.send('error on update');
+                                                    }
+                                                    console.log("updated", q_result2);
+                                                    client.query("SELECT * FROM city_weather WHERE city_code = $1 AND province_code = $2 AND city_name = $3",
+                                                        [req.params.cityCode, req.params.provinceCode, req.params.cityName], function (q_err3, q_result3) {
+                                                            console.log("SELECT * FROM city_weather WHERE city_code = $1 AND province_code = $2 AND city_name = $3");
+                                                            done();
+                                                            if (q_err3) {
+                                                                console.error(q_err3); res.send("Error " + q_err3);
+                                                            } else {
+                                                                //console.log(q_result3.rows)
+                                                                res.send({ results: q_result3.rows });
+                                                            }
+                                                        });
+                                                });
+
                                         });
+                                    }
                                 });
 
                             } else {
@@ -76,6 +93,7 @@ module.exports = {
                                                 if (q_err4) {
                                                     res.send('error on INSERT');
                                                 }
+                                                console.log('inserted', q_result4);
                                                 client.query("SELECT * FROM city_weather WHERE city_code = $1 AND province_code = $2 AND city_name = $3",
                                                     [req.params.cityCode, req.params.provinceCode, req.params.cityName], function (q_err5, q_result5) {
                                                         done();
