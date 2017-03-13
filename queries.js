@@ -1,4 +1,3 @@
-var pgp = require('pg-promise')();
 var rq = require('./requests');
 var db = require('./db-actions');
 
