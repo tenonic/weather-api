@@ -1,7 +1,7 @@
 var rq = require('./requests');
 var db = require('./db-actions');
 
-var parseString = require('xml2js').parseString;
+//var parseString = require('xml2js').parseString;
 
 module.exports = {
     getWeatherData: function getWeatherData(req, res, next) {
@@ -17,7 +17,7 @@ module.exports = {
                         var id_upd = data.rows[0].id;
                         var curDate = new Date();
                         var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
-                        rq.getWeatherXml(req, res).then(xml => {
+                        rq.getCurrentConditions(req, res).then(xml => {
                             parseString(xml, function (err, json) {
                                 db.updateCityData(req, res, new_exp_date, curDate, json)
                                     .then(() => {
@@ -31,7 +31,7 @@ module.exports = {
                         res.send({ results: data.rows[0] })
                     }
                 } else {
-                    rq.getWeatherXml(req, res).then(xml => {
+                    rq.getCurrentConditions(req, res).then(xml => {
                         parseString(xml, function (err, json) {
                             var curDate = new Date();
                             var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
@@ -53,6 +53,25 @@ module.exports = {
         // .catch(error => {
         //     // error;
         // });
+    },
+
+    getCityData: function getCityData(req, res, next) {
+        console.log('get city data');
+        var lineReader = require('readline').createInterface({
+            input: require('fs').createReadStream('cities.json')
+        });
+
+        var cities = [];
+        lineReader.on('line', function (line) {
+            var jsonLine = JSON.parse(line);
+            if (jsonLine.name.toLowerCase() === req.params.cityName.toLowerCase()) {
+                cities.push({"name" : jsonLine.name, "country": jsonLine.country, "geo": jsonLine.coord});
+            }
+        }).on('close', () => {
+            res.send({ allcities: cities });
+        });
+
+
     }
 
 };
