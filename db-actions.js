@@ -7,20 +7,22 @@ var db = pgp(conString);
 
 module.exports = {
     selectCityData: function (req, res, next) {
-        console.log('selecting data', req.params.cityCode, req.params.provinceCode, req.params.cityName);
-        return db.result("SELECT * FROM city_weather WHERE city_id", [req.params.cityId]);
+        console.log('selecting data', req.params.cityId);
+        var result = db.result("SELECT * FROM city_weather WHERE city_id=$1", [req.params.cityId]);
+        console.log(result);
+        return result;
     },
 
     updateCityData: function (req, res, new_exp_date, curDate, json) {
         return db.none("UPDATE city_weather SET expiry_date=($1), modified_date=($2), current_conditions=($3) " +
             "WHERE city_id = $4",
-            [new_exp_date, curDate, current_conditions, req.params.cityId])
+            [new_exp_date, curDate, json, req.params.cityId])
     },
 
     insertCityData: function (req, res, new_exp_date, curDate, json) {
         console.log('inserting');
         return db.none('INSERT INTO city_weather(city_id, current_conditions, created_date, modified_date, expiry_date)'
             + 'values($1, $2, $3, $4, $5)',
-            [req.params.cityId, current_conditions, curDate, curDate, new_exp_date])
+            [req.params.cityId, json, curDate, curDate, new_exp_date])
     }
 }

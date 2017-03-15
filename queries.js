@@ -17,33 +17,30 @@ module.exports = {
                         var id_upd = data.rows[0].id;
                         var curDate = new Date();
                         var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
-                        rq.getCurrentConditions(req, res).then(xml => {
-                            parseString(xml, function (err, json) {
-                                db.updateCityData(req, res, new_exp_date, curDate, json)
-                                    .then(() => {
-                                        db.selectCityData(req, res).then(
-                                            (data) => res.send({ results: data.rows[0] })
-                                        )
-                                    });
-                            })
+                        rq.getCurrentConditions(req, res).then(weatherData => {
+                            console.log(weatherData);
+                            db.updateCityData(req, res, new_exp_date, curDate, weatherData)
+                                .then(() => {
+                                    db.selectCityData(req, res).then(
+                                        (data) => res.send(data.rows[0])
+                                    )
+                                });
                         })
                     } else {
-                        res.send({ results: data.rows[0] })
+                        res.send(data.rows[0])
                     }
                 } else {
-                    rq.getCurrentConditions(req, res).then(xml => {
-                        parseString(xml, function (err, json) {
-                            var curDate = new Date();
-                            var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
-                            db.insertCityData(req, res, new_exp_date, curDate, json).then(() => {
-                                //console.log('inserted');
-                                db.selectCityData(req, res).then(
-                                    data => res.send({ results: data.rows[0] })
-                                )
-                            }
+                    rq.getCurrentConditions(req, res).then(weatherData => {
+                        var curDate = new Date();
+                        var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
+                        db.insertCityData(req, res, new_exp_date, curDate, weatherData).then(() => {
+                            //console.log('inserted');
+                            db.selectCityData(req, res).then(
+                                data => res.send(data.rows[0])
+                            )
+                        }
 
-                            );
-                        })
+                        );
                     });
                 }
             });
@@ -56,7 +53,6 @@ module.exports = {
     },
 
     getCityData: function getCityData(req, res, next) {
-        console.log('get city data');
         var lineReader = require('readline').createInterface({
             input: require('fs').createReadStream('cities.json')
         });
@@ -65,10 +61,10 @@ module.exports = {
         lineReader.on('line', function (line) {
             var jsonLine = JSON.parse(line);
             if (jsonLine.name.toLowerCase() === req.params.cityName.toLowerCase()) {
-                cities.push({"name" : jsonLine.name, "country": jsonLine.country, "geo": jsonLine.coord});
+                cities.push({ "name": jsonLine.name, "country": jsonLine.country, "geo": jsonLine.coord, "cityId": jsonLine._id });
             }
         }).on('close', () => {
-            res.send({ allcities: cities });
+            res.send(cities);
         });
 
 
