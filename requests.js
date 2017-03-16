@@ -6,7 +6,6 @@ var units = 'metric';
 module.exports = {
     getCurrentConditions: function (req, res, next) {
         var url = currentConditionsUrl + "id=" + req.params.cityId + "&units=" + units + "&APPID=" + APPID;
-        console.log(url);
         return rp(url);
     }
 }

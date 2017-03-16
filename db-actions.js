@@ -9,7 +9,6 @@ module.exports = {
     selectCityData: function (req, res, next) {
         console.log('selecting data', req.params.cityId);
         var result = db.result("SELECT * FROM city_weather WHERE city_id=$1", [req.params.cityId]);
-        console.log(result);
         return result;
     },
 

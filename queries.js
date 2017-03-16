@@ -22,12 +22,12 @@ module.exports = {
                             db.updateCityData(req, res, new_exp_date, curDate, weatherData)
                                 .then(() => {
                                     db.selectCityData(req, res).then(
-                                        (data) => res.send(data.rows[0])
+                                        (data) => res.send(data.rows[0].current_conditions)
                                     )
                                 });
                         })
                     } else {
-                        res.send(data.rows[0])
+                        res.send(data.rows[0].current_conditions)
                     }
                 } else {
                     rq.getCurrentConditions(req, res).then(weatherData => {
@@ -36,7 +36,7 @@ module.exports = {
                         db.insertCityData(req, res, new_exp_date, curDate, weatherData).then(() => {
                             //console.log('inserted');
                             db.selectCityData(req, res).then(
-                                data => res.send(data.rows[0])
+                                data => res.send(data.rows[0].current_conditions)
                             )
                         }
 
