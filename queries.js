@@ -57,14 +57,22 @@ module.exports = {
             input: require('fs').createReadStream('cities.json')
         });
 
-        var cities = [];
+        var citiesFull = [];
+        var citiesPartial = [];
         lineReader.on('line', function (line) {
             var jsonLine = JSON.parse(line);
+            if (jsonLine.name.toLowerCase().indexOf(req.params.cityName.toLowerCase()) > -1) {
+                citiesPartial.push({ "name": jsonLine.name, "country": jsonLine.country, "geo": jsonLine.coord, "cityId": jsonLine._id });
+            }
             if (jsonLine.name.toLowerCase() === req.params.cityName.toLowerCase()) {
-                cities.push({ "name": jsonLine.name, "country": jsonLine.country, "geo": jsonLine.coord, "cityId": jsonLine._id });
+                citiesFull.push({ "name": jsonLine.name, "country": jsonLine.country, "geo": jsonLine.coord, "cityId": jsonLine._id });
             }
         }).on('close', () => {
-            res.send(cities);
+            if(citiesFull.length > 0) {
+                res.send(citiesFull);            
+            } else {
+                res.send(citiesPartial)
+            }
         });
 
 
