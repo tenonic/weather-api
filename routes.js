@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 //     dbActions.checkAndUpdate(req, res);
 // });
 
-router.get('/currentConditions/:cityId', qer.getWeatherData);
+router.get('/currentConditions/:cityId/:cityName/:countryName', qer.getWeatherData);
 router.get('/cityData/:cityName', qer.getCityData);
 
 
