@@ -38,9 +38,7 @@ module.exports = {
                             db.selectCityData(req, res).then(
                                 data => res.send(data.rows[0].current_conditions)
                             )
-                        }
-
-                        );
+                        });
                     });
                 }
             });
@@ -50,6 +48,26 @@ module.exports = {
         // .catch(error => {
         //     // error;
         // });
+    },
+
+    getWeatherDataByGeo: function getWeatherDataByGeo(req, res, next) {
+        console.log('---getWeatherDataByGeo---')
+        rq.getConditionsByGeo(req, res).then(weatherData => {
+            var curDate = new Date();
+            var new_exp_date = new Date(curDate.setMinutes(curDate.getMinutes() + 5));
+            console.log(JSON.parse(weatherData).name);
+            console.log(JSON.parse(weatherData).id);
+            console.log(JSON.parse(weatherData).sys.country);
+            console.log(req.params);
+            res.send(weatherData);
+            //todo: check if this city record is in db and update / insert accordingly
+            // db.insertCityData(req, res, new_exp_date, curDate, weatherData).then(() => {
+            //     console.log('---- getWeatherDataByGeo inserted ----');
+            //     db.selectCityData(req, res).then(
+            //         data => res.send(data.rows[0].current_conditions)
+            //     )
+            // });
+        });
     },
 
     getCityData: function getCityData(req, res, next) {
@@ -68,8 +86,8 @@ module.exports = {
                 citiesFull.push({ "name": jsonLine.name, "country": jsonLine.country, "geo": jsonLine.coord, "cityId": jsonLine._id });
             }
         }).on('close', () => {
-            if(citiesFull.length > 0) {
-                res.send(citiesFull);            
+            if (citiesFull.length > 0) {
+                res.send(citiesFull);
             } else {
                 res.send(citiesPartial)
             }

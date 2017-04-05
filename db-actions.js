@@ -23,5 +23,13 @@ module.exports = {
         return db.none('INSERT INTO city_weather(city_id, current_conditions, created_date, modified_date, expiry_date, city_name, country)'
             + 'values($1, $2, $3, $4, $5, $6, $7)',
             [req.params.cityId, json, curDate, curDate, new_exp_date, req.params.cityName, req.params.countryName])
+    },
+
+     insertCityData2: function (cityId, cityName, countryName, res, new_exp_date, curDate, json) {
+        console.log('inserting 2...');
+        return db.none('INSERT INTO city_weather(city_id, current_conditions, created_date, modified_date, expiry_date, city_name, country)'
+            + 'values($1, $2, $3, $4, $5, $6, $7)',
+            [cityId, json, curDate, curDate, new_exp_date, cityName, countryName])
     }
+    
 }

@@ -14,6 +14,7 @@ router.get('/', (req, res) => {
 // });
 
 router.get('/currentConditions/:cityId/:cityName/:countryName', qer.getWeatherData);
+router.get('/currentConditions/:lat/:lon', qer.getWeatherDataByGeo);
 router.get('/cityData/:cityName', qer.getCityData);
 
 

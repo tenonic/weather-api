@@ -7,6 +7,11 @@ module.exports = {
     getCurrentConditions: function (req, res, next) {
         var url = currentConditionsUrl + "id=" + req.params.cityId + "&units=" + units + "&APPID=" + APPID;
         return rp(url);
+    },
+
+    getConditionsByGeo: function(req, res, next) {
+        var url = currentConditionsUrl + "lat=" + req.params.lat + "&lon=" + req.params.lon + "&units=" + units + "&APPID=" + APPID;
+        return rp(url);
     }
 }
 
