@@ -6,23 +6,24 @@ var conString = process.env.DATABASE_URL
 var db = pgp(conString);
 
 module.exports = {
-    selectCityData: function (req, res, next) {
-        console.log('selecting data', req.params.cityId);
-        var result = db.result("SELECT * FROM city_weather WHERE city_id=$1", [req.params.cityId]);
+    selectCityData: function (cityId) {
+        console.log(typeof(cityId));
+        console.log('selecting data', cityId);
+        var result = db.result("SELECT * FROM city_weather WHERE city_id=$1", [cityId]);
         return result;
     },
 
-    updateCityData: function (req, res, new_exp_date, curDate, json) {
+    updateCityData: function (cityId, new_exp_date, curDate, json) {
         return db.none("UPDATE city_weather SET expiry_date=($1), modified_date=($2), current_conditions=($3) " +
             "WHERE city_id = $4",
-            [new_exp_date, curDate, json, req.params.cityId])
+            [new_exp_date, curDate, json, cityId])
     },
 
-    insertCityData: function (req, res, new_exp_date, curDate, json) {
+    insertCityData: function (cityId, cityName, countryName, new_exp_date, curDate, json) {
         console.log('inserting');
         return db.none('INSERT INTO city_weather(city_id, current_conditions, created_date, modified_date, expiry_date, city_name, country)'
             + 'values($1, $2, $3, $4, $5, $6, $7)',
-            [req.params.cityId, json, curDate, curDate, new_exp_date, req.params.cityName, req.params.countryName])
+            [cityId, json, curDate, curDate, new_exp_date, cityName, countryName])
     },
 
      insertCityData2: function (cityId, cityName, countryName, res, new_exp_date, curDate, json) {
